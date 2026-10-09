@@ -10,14 +10,12 @@ English with citations.
 
 Course: Generative AI & Data Engineering, Northeastern University
 
-## Team
-| Name | Role |
-|---|---|
-| (name) | Data Engineer - ingestion, Airflow, Bronze |
-| (name) | Data Modeler - Data Vault, dbt, Gold |
-| (name) | AI Engineer - Cortex, RAG, agents, evaluation |
-| (name) | App & DevOps Lead - Streamlit, MCP, GitHub |
-
+   ## Team
+   | Name | Role |
+   |---|---|
+   | (Darshan) | Data Engineer - ingestion, Airflow, Bronze, Data Vault, dbt, Gold |
+   | (Pranjal) | AI Engineer - Cortex, RAG, agents, evaluation |
+   | (Shreya) | App & DevOps Lead - Streamlit, MCP server, GitHub, governance |
 ## Repository layout
 | Folder | What goes in it |
 |---|---|
