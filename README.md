@@ -14,7 +14,7 @@ Course: Generative AI & Data Engineering, Northeastern University
    | Name | Role |
    |---|---|
    | (Darshan) | Data Engineer - ingestion, Airflow, Bronze, Data Vault, dbt, Gold |
-   | (Pranjal) | AI Engineer - Cortex, RAG, agents, evaluation |
+   | (Pranjal) | AI Engineer - Cortex, RAG, agents |
    | (Shreya) | App & DevOps Lead - Streamlit, MCP server, GitHub, governance |
 ## Repository layout
 | Folder | What goes in it |
