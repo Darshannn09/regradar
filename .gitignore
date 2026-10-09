@@ -1,0 +1,28 @@
+# Secrets - never commit these
+.env
+*.pem
+*.p8
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Local data (data lives in Snowflake, not GitHub)
+data/
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# Airflow
+airflow/logs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
