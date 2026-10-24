@@ -146,16 +146,6 @@ python ingestion/30_load_bronze.py
 
 ---
 
-## 👥 Team
-
-| Name | Role |
-|---|---|
-| *Name* | Data engineer |
-| *Name* | Data modeler / analytics engineer |
-| *Name* | AI engineer |
-| *Name* | App and DevOps lead |
-
----
 
 ## 📄 License and data attribution
 
