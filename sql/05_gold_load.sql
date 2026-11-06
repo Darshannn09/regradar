@@ -136,10 +136,18 @@ INSERT INTO DIM_BILL (BILL_KEY, BILL_ID, SESSION_NAME, BILL_TYPE, BILL_NUMBER, T
                       LATEST_ACTION_TEXT, BILL_URL)
 SELECT -1, 'UNKNOWN', NULL, NULL, NULL, 'Unknown bill', NULL, NULL, NULL
 UNION ALL
-SELECT ROW_NUMBER() OVER (ORDER BY bill_id), LEFT(bill_id, 50), congress || 'th Congress', LEFT(bill_type, 10),
+SELECT ROW_NUMBER() OVER (ORDER BY bill_id), LEFT(bill_id, 50), session_name, LEFT(bill_type, 10),
        LEFT(bill_number, 20), LEFT(title, 4000), LEFT(origin_chamber, 20), LEFT(latest_action_text, 4000),
        LEFT(bill_url, 1000)
-FROM SILVER.BILLS;
+FROM (
+  SELECT bill_id, congress || 'th Congress' AS session_name, bill_type, bill_number, title,
+         origin_chamber, latest_action_text, bill_url
+  FROM SILVER.BILLS
+  UNION ALL                                           -- Massachusetts bills (LegiScan)
+  SELECT bill_id, 'MA ' || session_name, bill_type, bill_number, title,
+         NULL, latest_action_text, bill_url
+  FROM SILVER.MA_BILLS
+);
 
 INSERT INTO DIM_NEIGHBORHOOD (NEIGHBORHOOD_KEY, NEIGHBORHOOD_NAME, CITY, AREA_SQ_MILES, CENTROID_LAT, CENTROID_LON)
 SELECT -1, 'Outside Boston / unknown', NULL, NULL, NULL, NULL
@@ -276,7 +284,11 @@ INSERT INTO FACT_BILL (BILL_KEY, JURISDICTION_KEY, LATEST_ACTION_DATE_KEY, UPDAT
                        IS_SMALL_BUSINESS_RELEVANT, BILL_COUNT)
 SELECT d.bill_key, 1, DATE_KEY(b.latest_action_date), DATE_KEY(b.update_date), b.is_small_business_relevant, 1
 FROM SILVER.BILLS b
-JOIN DIM_BILL d ON d.bill_id = LEFT(b.bill_id, 50);
+JOIN DIM_BILL d ON d.bill_id = LEFT(b.bill_id, 50)
+UNION ALL                                             -- Massachusetts bills: jurisdiction 2
+SELECT d.bill_key, 2, DATE_KEY(m.latest_action_date), DATE_KEY(m.status_date), m.is_small_business_relevant, 1
+FROM SILVER.MA_BILLS m
+JOIN DIM_BILL d ON d.bill_id = LEFT(m.bill_id, 50);
 
 -- FACT_NEIGHBORHOOD_PROFILE (periodic snapshot): one row per neighborhood for today's snapshot
 INSERT INTO FACT_NEIGHBORHOOD_PROFILE (NEIGHBORHOOD_KEY, SNAPSHOT_DATE_KEY, ACS_YEAR, RESIDENTS, RESIDENTS_18_34,
