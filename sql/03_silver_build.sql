@@ -191,6 +191,33 @@ SELECT
 FROM BRONZE.RAW_CONGRESS
 QUALIFY ROW_NUMBER() OVER (PARTITION BY bill_id ORDER BY loaded_at DESC) = 1;
 
+-- Massachusetts bills from LegiScan (getMasterList). The empty table guard lets this script
+-- run even before the first LegiScan load.
+CREATE TABLE IF NOT EXISTS BRONZE.RAW_MA_BILLS
+  (PAYLOAD VARIANT, SOURCE_FILE STRING, LOADED_AT TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP());
+
+CREATE OR REPLACE TABLE MA_BILLS AS
+SELECT
+  'MA-' || payload:session_id::STRING || '-' || payload:number::STRING AS bill_id,
+  payload:bill_id::NUMBER                              AS legiscan_bill_id,
+  payload:session_name::STRING                         AS session_name,
+  payload:number::STRING                               AS bill_number,
+  REGEXP_SUBSTR(payload:number::STRING, '^[A-Z]+')     AS bill_type,
+  payload:title::STRING                                AS title,
+  payload:description::STRING                          AS description,
+  payload:status::NUMBER                               AS status_code,
+  TRY_TO_DATE(payload:status_date::STRING)             AS status_date,
+  TRY_TO_DATE(payload:last_action_date::STRING)        AS latest_action_date,
+  payload:last_action::STRING                          AS latest_action_text,
+  payload:url::STRING                                  AS bill_url,
+  payload:change_hash::STRING                          AS change_hash,
+  REGEXP_INSTR(LOWER(COALESCE(payload:title::STRING, '') || ' ' || COALESCE(payload:description::STRING, '')),
+    'small business|restaurant|construction|retail|minimum wage|sick time|employer|food|license') > 0
+                                                       AS is_small_business_relevant
+FROM BRONZE.RAW_MA_BILLS
+WHERE payload:bill_id::STRING IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (PARTITION BY payload:bill_id::NUMBER ORDER BY loaded_at DESC) = 1;
+
 -- Massachusetts regulations
 CREATE OR REPLACE TABLE MA_REGULATIONS AS
 SELECT
@@ -358,6 +385,7 @@ UNION ALL SELECT 'ID_CROSSWALK', COUNT(*), ROUND(100 * COUNT_IF(matched_to_regs_
 UNION ALL SELECT 'CFR_VERSIONS', COUNT(*), NULL FROM CFR_VERSIONS
 UNION ALL SELECT 'CFR_PART_TEXT', COUNT(*), NULL FROM CFR_PART_TEXT
 UNION ALL SELECT 'BILLS', COUNT(*), COUNT_IF(is_small_business_relevant) || ' small-business relevant' FROM BILLS
+UNION ALL SELECT 'MA_BILLS', COUNT(*), COUNT_IF(is_small_business_relevant) || ' small-business relevant' FROM MA_BILLS
 UNION ALL SELECT 'MA_REGULATIONS', COUNT(*), NULL FROM MA_REGULATIONS
 UNION ALL SELECT 'NAICS', COUNT(*), COUNT(sector_title) || ' with a sector title' FROM NAICS
 UNION ALL SELECT 'NEIGHBORHOODS', COUNT(*), COUNT(geog) || ' with valid boundaries' FROM NEIGHBORHOODS
