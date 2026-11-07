@@ -1,3 +1,4 @@
+
 # RegRadar gold schema: notes for writing SQL
 
 Database REGRADAR_DB, schema GOLD, Snowflake SQL. Always use full names, for example REGRADAR_DB.GOLD.FACT_RULE.
@@ -45,3 +46,8 @@ Database REGRADAR_DB, schema GOLD, Snowflake SQL. Always use full names, for exa
 - Boolean columns can be used directly: WHERE is_open_for_comment, WHERE is_substantive, WHERE is_small_business_relevant.
 - COMMENT_PERIOD_DAYS can be NULL; ignore NULLs when averaging.
 - MEDIAN_HOUSEHOLD_INCOME is non-additive: never SUM it.
+
+## Writing correct SQL for this schema
+- Many tables share key names (RULE_KEY, INDUSTRY_KEY, DATE_KEY). When joining, give every table an alias and prefix every column with it, for example COUNT(DISTINCT f.rule_key).
+- NAICS_CODE is text, not a number. Always compare it to quoted strings, for example naics_code IN ('722', '44-45').
+- FACT_BUSINESS_COUNT already holds counts: one row per ZIP code, industry, and year. The number of businesses is the ESTABLISHMENTS column. Do not count rows. Filter to one industry code, because codes overlap ('7225' includes '722515').
